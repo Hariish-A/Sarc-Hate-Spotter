@@ -18,6 +18,9 @@ from sklearn.metrics import (
     recall_score, f1_score, roc_auc_score, roc_curve
 )
 
+unique_sarcastic_words=['little', 'new', 'employee', 'job', 'human', 'report', 'self', 'tell', 'local', 'good', 'every', 'announces', 'study', 'dad', 'couple', 'get', 'parent', 'god', 'never', 'last', 'come', 'woman', 'day', 'million', 'doesnt', 'teen', 'entire', 'party', 'yearold', 'see', 'getting', 'friend', 'one', 'he', 'man', 'find', 'cant', 'office', 'hour', 'bush', 'area', 'around', 'enough', 'guy', 'minute', 'work', 'introduces', 'american', 'going', 'nation']
+unique_hate_speech_words=['life', 'yall', 'cunt', 'fucking', 'ya', 'bitch', 'lmao', 'bad', 'gonna', 'fuck', 'get', 'come', 'wit', 'damn', 'lil', 'dat', 'like', 'faggot', 'aint', 'cause', 'hoe', 'money', 'always', 'stop', 'yo', 'rt', 'eat', 'real', 'little', 'ill', 'nigga', 'tell', 'u', 'give', 'dont', 'dumb', 'wanna', 'retarded', 'fag', 'im', 'bout', 'as', 'ugly', 'dick', 'pussy', 'nigger', 'fuckin', 'shit', 'niggah', 'gotta']
+
 # Download required NLTK data
 nltk.download('stopwords')
 nltk.download('wordnet')
