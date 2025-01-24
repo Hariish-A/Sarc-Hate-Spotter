@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -13,43 +12,46 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
-from imblearn.over_sampling import SMOTE  # Import SMOTE
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, precision_score, recall_score, f1_score, roc_auc_score, roc_curve
-# Download stopwords and WordNet
+from imblearn.over_sampling import SMOTE
+from sklearn.metrics import (
+    accuracy_score, classification_report, confusion_matrix, precision_score, 
+    recall_score, f1_score, roc_auc_score, roc_curve
+)
+
+# Download required NLTK data
 nltk.download('stopwords')
 nltk.download('wordnet')
+nltk.download('omw-1.4')  # For lemmatizer language support
+
 stopword = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
-import pandas as pd
-import numpy as np
-import re
-import string
-from collections import Counter
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-unique_sarcastic_words=['little', 'new', 'employee', 'job', 'human', 'report', 'self', 'tell', 'local', 'good', 'every', 'announces', 'study', 'dad', 'couple', 'get', 'parent', 'god', 'never', 'last', 'come', 'woman', 'day', 'million', 'doesnt', 'teen', 'entire', 'party', 'yearold', 'see', 'getting', 'friend', 'one', 'he', 'man', 'find', 'cant', 'office', 'hour', 'bush', 'area', 'around', 'enough', 'guy', 'minute', 'work', 'introduces', 'american', 'going', 'nation']
-unique_hate_speech_words=['life', 'yall', 'cunt', 'fucking', 'ya', 'bitch', 'lmao', 'bad', 'gonna', 'fuck', 'get', 'come', 'wit', 'damn', 'lil', 'dat', 'like', 'faggot', 'aint', 'cause', 'hoe', 'money', 'always', 'stop', 'yo', 'rt', 'eat', 'real', 'little', 'ill', 'nigga', 'tell', 'u', 'give', 'dont', 'dumb', 'wanna', 'retarded', 'fag', 'im', 'bout', 'as', 'ugly', 'dick', 'pussy', 'nigger', 'fuckin', 'shit', 'niggah', 'gotta']
+
+# Helper function to preprocess text
+def preprocess_text(text):
+    if not isinstance(text, str):
+        return ""
+    text = re.sub(f"[{re.escape(string.punctuation)}]", "", text.lower())  # Remove punctuation and lowercase
+    text = " ".join(
+        [lemmatizer.lemmatize(word) for word in text.split() if word not in stopword]
+    )
+    return text
+
 # Load and clean dataset for sarcasm
 df_sarcasm = pd.read_csv("Sarcasm_Headlines_Dataset.csv")
-df_sarcasm['headline'] = df_sarcasm['headline'].apply(lambda x: re.sub('[%s]' % re.escape(string.punctuation), '', str(x).lower()))
-df_sarcasm['headline'] = df_sarcasm['headline'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in x.split() if word not in stopword]))
+df_sarcasm['headline'] = df_sarcasm['headline'].apply(preprocess_text)
 
 # Load and clean dataset for hate span
 df_hate_span = pd.read_csv("twitter_data.csv")
-df_hate_span['tweet'] = df_hate_span['tweet'].apply(lambda x: re.sub('[%s]' % re.escape(string.punctuation), '', str(x).lower()))
-df_hate_span['tweet'] = df_hate_span['tweet'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in x.split() if word not in stopword]))
+df_hate_span['tweet'] = df_hate_span['tweet'].apply(preprocess_text)
 
 # Map labels: 0 and 1 -> Positive class; 2 -> Negative class
-df_hate_span['labels'] = df_hate_span['class'].map({0: 1, 1: 1, 2: 0})  # 0 for positive (0 and 1), 1 for negative (2)
+df_hate_span['labels'] = df_hate_span['class'].map({0: 1, 1: 1, 2: 0})
 y_hate_span = df_hate_span['labels']
 
 # Vectorize data using the same vectorizer for both datasets
 vectorizer = CountVectorizer()
 X_sarcasm = vectorizer.fit_transform(df_sarcasm['headline'])
-X_hate_span = vectorizer.transform(df_hate_span['tweet'])  # Use transform to ensure the same feature set
+X_hate_span = vectorizer.transform(df_hate_span['tweet'])
 y_sarcasm = df_sarcasm['is_sarcastic']
 
 # Split data before applying SMOTE
@@ -65,7 +67,7 @@ model_sarcasm = MultinomialNB()
 model_hate_span = SVC(kernel='linear', probability=True)
 
 model_sarcasm.fit(X_train_sarcasm, y_train_sarcasm)
-model_hate_span.fit(X_train_hate_span_resampled, y_train_hate_span_resampled)  # Use resampled data
+model_hate_span.fit(X_train_hate_span_resampled, y_train_hate_span_resampled)
 
 # Get accuracy and AUC scores
 accuracy_sarcasm = accuracy_score(y_test_sarcasm, model_sarcasm.predict(X_test_sarcasm))
